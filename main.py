@@ -3,6 +3,7 @@
 import os
 import sys
 from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 
@@ -20,18 +21,28 @@ def main():
 		print("ERROR: submit with the prompt: main.py 'why is the sky blue?'")
 		sys.exit(1)
 
-	user_prompt = ' '.join(args)
+	if args[-1] == "--verbose":
+		user_prompt = ' '.join(args[:-1])
+	else:
+		user_prompt = ' '.join(args)
+
+	messages = [
+		types.Content(role="user", parts=[types.Part(text=user_prompt)]),
+	]
 
 	response = client.models.generate_content(
 		model='gemini-2.0-flash-001', 
-		contents=user_prompt
+		contents=messages,
 	)
 
-	print(" >> -- << ")
-	print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-	print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-	print("Response:")
-	print(response.text)
+	if args[-1] == "--verbose":
+		print(f"User prompt: {user_prompt}")
+		print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+		print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+		print("Response:")
+		print(response.text)
+	else:
+		print(response.text)	
 
 
 if __name__ == "__main__":
