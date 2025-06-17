@@ -7,6 +7,8 @@ from google.genai import types
 from dotenv import load_dotenv
 
 from functions.get_files_info import get_files_info
+from functions.get_file_content import get_file_content
+
 
 def get_files():
     print(get_files_info('calculator', '.'))
@@ -15,6 +17,10 @@ def get_files():
     print(get_files_info('calculator', 'tests.py'))
     print(get_files_info('calculator', 'pkg/../../'))
 
+def get_contents():
+    print(get_file_content('calculator', 'main.py'))
+    print(get_file_content('calculator', 'pkg/calculator.py'))
+    print(get_file_content('calculator', '/bin/cat'))
 
 def main():
     load_dotenv()
@@ -53,4 +59,6 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    get_files()
+    # get_files()
+    get_contents()
+
