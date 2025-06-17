@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from functions.get_files_info import get_files_info
 from functions.get_file_content import get_file_content
+from functions.write_file import write_file
 
 
 def get_files():
@@ -21,6 +22,12 @@ def get_contents():
     print(get_file_content('calculator', 'main.py'))
     print(get_file_content('calculator', 'pkg/calculator.py'))
     print(get_file_content('calculator', '/bin/cat'))
+
+def write_to_files():
+    print(write_file('calculator', 'lorem.txt', "wait, this isn't lorem ipsum"))
+    print(write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet"))
+    print(write_file('calculator', '/tmp/temp.txt', "this should not be allowed"))
+
 
 def main():
     load_dotenv()
@@ -60,5 +67,5 @@ def main():
 if __name__ == "__main__":
     # main()
     # get_files()
-    get_contents()
-
+    # get_contents()
+    write_to_files()
