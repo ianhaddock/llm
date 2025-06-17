@@ -1,11 +1,10 @@
 # get_file_content.py
 
 import os
+from config import MAX_CHARS
 
 def get_file_content(working_directory, file_path) -> str:
     
-    MAX_CHARS = 10000
-
     working_path = os.path.abspath(working_directory) 
     target = os.path.abspath(os.path.join(working_path, file_path))
     #print(working_path)
