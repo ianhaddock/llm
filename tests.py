@@ -6,9 +6,32 @@ from functions.get_files_info import get_files_info
 
 class TestGetFilesInfo(unittest.TestCase):
 
-    def test_simple(self):
+    def test_error_bin(self):
+        result = get_files_info("calculator", "/bin")
+        print(result)
+        self.assertEqual(result, 'Error: Cannot list "/bin" as it is outside the permitted working directory')
+
+    def test_error_double_dot(self):
+        result = get_files_info("calculator", "pkg/../../")
+        print(result)
+        self.assertEqual(result, 'Error: Cannot list "pkg/../../" as it is outside the permitted working directory')
+
+    def test_error_not_a_dir(self):
+        result = get_files_info("calculator", "tests.py")
+        print(result)
+        self.assertEqual(result, 'Error: "tests.py" is not a directory.')
+
+    def test_success_list_dir(self):
         result = get_files_info("calculator", ".")
-        self.assertEqual(result, "main.py: file_size: 576 bytes, is_dir=False")
+        print(result)
+        expected = "tests.py: file_size: 1343 bytes, is_dir=False\nmain.py: file_size: 576 bytes, is_dir=False\npkg: file_size: 128 bytes, is_dir=True\n"
+        self.assertEqual(result, expected)
+
+    def test_success_list_dir_2(self):
+        result = get_files_info("calculator", "pkg")
+        print(result)
+        expected = "render.py: file_size: 767 bytes, is_dir=False\ncalculator.py: file_size: 1738 bytes, is_dir=False\n"
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
