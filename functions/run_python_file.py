@@ -2,6 +2,8 @@
 
 import os
 import subprocess 
+from google.genai import types
+
 
 def run_python_file(working_directory, file_path, args=None) -> str:
     
@@ -45,3 +47,28 @@ def run_python_file(working_directory, file_path, args=None) -> str:
     output_string = "\n".join(output) if output else "No output produced."
 
     return output_string
+
+
+schema_run_python_file = types.FunctionDeclaration(
+    name="run_python_file",
+    description="Executes a python file in a subprocess, constrained to the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path to the python file to execute, relative to the working directory.",
+            ),
+            "args": types.Schema(
+                type=types.Type.ARRAY,
+                items=types.Schema(
+                    type=types.Type.STRING,
+                    description="Optional arguments to pass to the Python file.",
+                    ),
+                description="Optional arguments to pass to the Python file.",
+            ),
+        },
+        required=["file_path"],
+    ),
+)
+

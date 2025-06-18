@@ -7,42 +7,15 @@ from google.genai import types
 from dotenv import load_dotenv
 
 from prompts import system_prompt
+from call_function import available_functions
 
-from functions.get_files_info import get_files_info
-from functions.get_file_content import get_file_content
-from functions.write_file import write_file
-from functions.run_python_file import run_python_file
-
-
-def get_files():
-    print(get_files_info('calculator', '.'))
-    print(get_files_info('calculator', 'pkg'))
-    print(get_files_info('calculator', '/bin'))
-    print(get_files_info('calculator', 'tests.py'))
-    print(get_files_info('calculator', 'pkg/../../'))
-
-def get_contents():
-    print(get_file_content('calculator', 'main.py'))
-    print(get_file_content('calculator', 'pkg/calculator.py'))
-    print(get_file_content('calculator', '/bin/cat'))
-
-def write_to_files():
-    print(write_file('calculator', 'lorem.txt', "wait, this isn't lorem ipsum"))
-    print(write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet"))
-    print(write_file('calculator', '/tmp/temp.txt', "this should not be allowed"))
-
-def run_python():
-    print(run_python_file('calculator', 'main.py'))
-    print(run_python_file('calculator', 'tests.py'))
-    print(run_python_file('calculator', '../main.py'))
-    print(run_python_file('calculator', 'nonexistent.py'))
 
 def main():
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
-    verbose = "--verbose" in sys.argv
 
+    verbose = "--verbose" in sys.argv
     args = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
 
     if not args:
@@ -52,33 +25,19 @@ def main():
         sys.exit(1)
 
 
-    schema_get_files_info = types.FunctionDeclaration(
-        name="get_files_info",
-        description="Lists files in the specified directory along with their sizes, constrained to the working directory.",
-        parameters=types.Schema(
-            type=types.Type.OBJECT,
-            properties={
-                "directory": types.Schema(
-                    type=types.Type.STRING,
-                    description="The directory to list files from, relative to the working directory. If not provided, lists files in the working directory itself.",
-                ),
-            },
-        ),
-    )
-
-    available_functions = types.Tool(
-        function_declarations=[
-            schema_get_files_info,
-        ]
-    )
-
-
     user_prompt = ' '.join(args)
+
+    if verbose:
+        print(f"User prompt: {user_prompt}\n")
 
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
+    generate_content(client, messages, verbose)
+
+
+def generate_content(client, messages, verbose):    
     response = client.models.generate_content(
         model='gemini-2.0-flash-001', 
         contents=messages,
@@ -87,25 +46,17 @@ def main():
         )
     )
 
-    if response.function_calls:
-        for function_call_part in response.function_calls:
-            print(f"Calling function: {function_call_part.name}({function_call_part.args})")
-
     if verbose:
-        print(f"User prompt: {user_prompt}\n")
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-        print("Response:")
+
+    if not response.function_calls:
         print(response.text)
-    else:
-        print("Response:")
-        print(response.text)    
+        return response.text
+        
+    for function_call_part in response.function_calls:
+        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
 
 
 if __name__ == "__main__":
     main()
-    # get_files()
-    # get_contents()
-    # write_to_files()
-    # run_python()
-
