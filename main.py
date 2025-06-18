@@ -6,6 +6,8 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
+from prompts import system_prompt
+
 from functions.get_files_info import get_files_info
 from functions.get_file_content import get_file_content
 from functions.write_file import write_file
@@ -44,8 +46,9 @@ def main():
     args = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
 
     if not args:
-        print("ERROR: submit with the prompt: main.py 'why is the sky blue?'")
-        print("Add '--verbose' at the end for more info")
+        print("AI Code Assistant")
+        print('\nUsage: python main.py "your prompt here" [--verbose]')
+        print('Example: python main.py "How do I fix the calculator?"')
         sys.exit(1)
 
     user_prompt = ' '.join(args)
@@ -57,6 +60,7 @@ def main():
     response = client.models.generate_content(
         model='gemini-2.0-flash-001', 
         contents=messages,
+        config=types.GenerateContentConfig(system_instruction=system_prompt),
     )
 
     if verbose:
@@ -71,9 +75,9 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     # get_files()
     # get_contents()
     # write_to_files()
-    run_python()
+    # run_python()
 
