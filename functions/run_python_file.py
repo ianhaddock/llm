@@ -20,8 +20,8 @@ def run_python_file(working_directory, file_path) -> str:
          return f'Error: "{file_path}" is not a Python file.'
 
     try:
-        with open(target, 'r') as file:
-            completed_process = subprocess.run(file, capture_output=True, cwd=os.path.dirname(target), timeout=30)
+        #with open(target, 'r') as file:
+        completed_process = subprocess.run(["python", target], capture_output=True, text=True, cwd=os.path.dirname(target), timeout=30)
     except Exception as e:
         return f"Error executing Python file: {e}"
 
