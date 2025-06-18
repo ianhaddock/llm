@@ -1,23 +1,19 @@
 # call_functions.py
 
 from google.genai import types
-from functions.get_files_info import schema_get_files_info
-from functions.get_file_content import schema_get_file_content
-from functions.run_python_file import schema_run_python_file
-from functions.write_file import schema_write_file
+from functions.get_files_info import schema_get_files_info, get_files_info
+from functions.get_file_content import schema_get_file_content, get_file_content
+from functions.run_python_file import schema_run_python_file, run_python_file
+from functions.write_file import schema_write_file, write_file
 
-from functions.get_files_info import get_files_info
-from functions.get_file_content import get_file_content
-from functions.run_python_file import run_python_file
-from functions.write_file import write_file
-
+from config import WORKING_DIR
 
 available_functions = types.Tool(
     function_declarations=[
         schema_get_files_info,
         schema_get_file_content,
         schema_run_python_file,
-        schema_write_file
+        schema_write_file,
     ]
 )
 
@@ -25,22 +21,21 @@ available_functions = types.Tool(
 def call_function(function_call_part, verbose=False):
     
     if verbose:
-        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+        print(f" - Calling function: {function_call_part.name}({function_call_part.args})")
     else:
         print(f" - Calling function: {function_call_part.name}")
 
-    full_args = {'working_directory': './calculator'}
-    full_args.update(function_call_part.args)
-    #print(f'>>> { full_args}')
     
-    commands = {
+    function_map = {
             'get_file_content': get_file_content,
             'get_files_info': get_files_info,
             'run_python_file': run_python_file,
             'write_file': write_file,
             }            
 
-    if function_call_part.name not in commands:
+    function_name = function_call_part.name
+
+    if function_name not in function_map:
         return types.Content(
             role="tool",
             parts=[
@@ -51,12 +46,11 @@ def call_function(function_call_part, verbose=False):
             ],
         )
 
-    #print(commands[function_call_part.name])
 
-    function_name = function_call_part.name
-    function = commands[function_call_part.name]
-    function_result = function(**full_args)
+    args = dict(function_call_part.args)
+    args['working_directory'] = WORKING_DIR
 
+    function_result = function_map[function_name](**args)
     return types.Content(
         role="tool",
         parts=[
